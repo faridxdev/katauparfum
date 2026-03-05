@@ -213,6 +213,56 @@ a[data-toggle="collapse"] {
     margin-right: 10px !important;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
 }
+/* =================== ADDITIONAL FIXES ============ */
+
+/* ensure the page always uses full vertical space and footer sticks */
+html, body {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+}
+
+.content-wrapper {
+    flex: 1 0 auto !important;
+}
+
+.main-footer {
+    flex-shrink: 0 !important;
+}
+
+/* hide theme customizer on narrow screens to prevent layout breakdown */
+@media (max-width: 768px) {
+    #customize-theme,
+    .jazzmin-customizer,
+    .theme-options,
+    .customizer-panel,
+    .admin-customizer,
+    .sidebar-customizer {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* optionally hide any cog/toggle button if present */
+    .nav-link[data-widget="theme"],
+    .nav-link[data-widget="customizer"],
+    .btn[data-widget="theme"],
+    .btn[data-widget="customizer"] {
+        display: none !important;
+    }
+
+    /* keep user/logout icons clickable */
+    .navbar-custom-menu a,
+    .navbar-custom-menu .btn,
+    .user-menu a,
+    .user-menu button,
+    .user-menu .dropdown-toggle,
+    .nav-item.dropdown .nav-link {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        z-index: 2000 !important;
+    }
+}
 
 /* ==========================================
    CORRECTIF PAGE DE SUPPRESSION

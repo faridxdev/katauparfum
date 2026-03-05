@@ -5,12 +5,15 @@
 document.addEventListener("DOMContentLoaded", function() {
     // 1. Réparer le menu profil (le petit bonhomme)
     // On remplace le href vide par '#' pour éviter le rechargement ou l'inaction
-    const userProfileLinks = document.querySelectorAll('.user-menu .dropdown-toggle, .nav-item.dropdown .nav-link');
-    
+    const userProfileLinks = document.querySelectorAll(
+        '.user-menu .dropdown-toggle, .nav-item.dropdown .nav-link, .navbar-custom-menu .user-menu, .user-menu > a'
+    );
+
     userProfileLinks.forEach(function(link) {
-        link.setAttribute('href', '#');
-        
-        // Force l'ouverture au clic si Bootstrap ne le fait pas
+        if (!link.getAttribute('href') || link.getAttribute('href') === 'javascript:void(0)') {
+            link.setAttribute('href', '#');
+        }
+
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const parent = this.parentElement;
@@ -21,6 +24,33 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+    // create fallback logout button if missing
+    const headerMenu = document.querySelector('.navbar-custom-menu');
+    if (headerMenu && !headerMenu.querySelector('.logout-btn')) {
+        const logoutBtn = document.createElement('a');
+        logoutBtn.href = '/admin/logout/';
+        logoutBtn.className = 'btn btn-danger logout-btn ml-2';
+        logoutBtn.textContent = 'Déconnexion';
+        logoutBtn.style.pointerEvents = 'auto';
+        logoutBtn.style.zIndex = '2000';
+        headerMenu.appendChild(logoutBtn);
+    }
+
+    // hide customizer panel on small screens (avoid deforming layout)
+    function hideCustomizer() {
+        if (window.innerWidth < 768) {
+            const selectors = ['#customize-theme', '.jazzmin-customizer', '.theme-options', '.customizer-panel', '.admin-customizer', '.sidebar-customizer'];
+            selectors.forEach(function(sel) {
+                document.querySelectorAll(sel).forEach(function(el){
+                    el.style.display='none';
+                    el.style.visibility='hidden';
+                });
+            });
+        }
+    }
+    hideCustomizer();
+    window.addEventListener('resize', hideCustomizer);
 
     // 2. S'assurer que les "Collaps" (Fieldsets des produits) sont cliquables
     const collapseToggles = document.querySelectorAll('a[data-toggle="collapse"]');
