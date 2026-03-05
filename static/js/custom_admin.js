@@ -25,17 +25,35 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // create fallback logout button if missing
-    const headerMenu = document.querySelector('.navbar-custom-menu');
-    if (headerMenu && !headerMenu.querySelector('.logout-btn')) {
-        const logoutBtn = document.createElement('a');
-        logoutBtn.href = '/admin/logout/';
-        logoutBtn.className = 'btn btn-danger logout-btn ml-2';
-        logoutBtn.textContent = 'Déconnexion';
-        logoutBtn.style.pointerEvents = 'auto';
-        logoutBtn.style.zIndex = '2000';
-        headerMenu.appendChild(logoutBtn);
+    // create fallback logout button if missing (re-run later if menu rebuilt)
+    function ensureLogout() {
+        const headerMenu = document.querySelector('.navbar-custom-menu');
+        if (headerMenu && !headerMenu.querySelector('.logout-btn')) {
+            const logoutBtn = document.createElement('a');
+            logoutBtn.href = '/admin/logout/';
+            logoutBtn.className = 'btn btn-danger logout-btn ml-2';
+            logoutBtn.textContent = 'Déconnexion';
+            logoutBtn.style.pointerEvents = 'auto';
+            logoutBtn.style.zIndex = '2000';
+            headerMenu.appendChild(logoutBtn);
+        }
     }
+    ensureLogout();
+    // occasionally the DOM is updated by Jazzmin, so keep checking
+    setInterval(ensureLogout, 2000);
+
+    // when avatar/link exists, add manual toggle handler in case Bootstrap is failing
+    document.querySelectorAll('.user-menu .dropdown-toggle, .nav-item.dropdown .nav-link').forEach(function(link) {
+        link.addEventListener('click', function(e){
+            e.preventDefault();
+            const parent = this.parentElement;
+            if (parent) {
+                parent.classList.toggle('show');
+                const menu = parent.querySelector('.dropdown-menu');
+                if (menu) menu.classList.toggle('show');
+            }
+        });
+    });
 
     // hide customizer panel on small screens (avoid deforming layout)
     function hideCustomizer() {

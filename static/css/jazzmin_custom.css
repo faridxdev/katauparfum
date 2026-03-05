@@ -243,11 +243,13 @@ html, body {
         pointer-events: none !important;
     }
 
-    /* optionally hide any cog/toggle button if present */
+    /* optionally hide any cog/toggle button if present (double safety) */
     .nav-link[data-widget="theme"],
     .nav-link[data-widget="customizer"],
     .btn[data-widget="theme"],
-    .btn[data-widget="customizer"] {
+    .btn[data-widget="customizer"],
+    .fa-cog, /* some variants render a cog icon */
+    .ui-builder-toggle {
         display: none !important;
     }
 

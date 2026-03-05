@@ -234,7 +234,8 @@ JAZZMIN_SETTINGS = {
     "hide_apps": [],
     
     # Footer
-    "show_ui_builder": True,
+    # UI builder (customizer) is entirely disabled; prevents cog/toggle rendering
+    "show_ui_builder": False,
     
     # CSS personnalisé
     "custom_css": "css/jazzmin_custom.css",
