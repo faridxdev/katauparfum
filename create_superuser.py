@@ -10,10 +10,15 @@ from django.contrib.auth import get_user_model
 def create_superuser():
     User = get_user_model()
     
-    # Récupérer les infos depuis les variables d'environnement (ou valeurs par défaut)
-    username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin_kat')
-    email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@katauparfum.com')
-    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'Mrmoney2026')
+    # Récupérer les infos depuis les variables d'environnement Render
+    username = os.environ.get('DJANGO_SUPERUSER_USERNAME')
+    email = os.environ.get('DJANGO_SUPERUSER_EMAIL')
+    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+
+    if not all([username, email, password]):
+        print("⚠️ Variables d'environnement manquantes (DJANGO_SUPERUSER_USERNAME, EMAIL, PASSWORD).")
+        print("ℹ️ Le superutilisateur ne sera pas créé automatiquement.")
+        return
 
     if not User.objects.filter(username=username).exists():
         print(f"Création du superutilisateur '{username}'...")
