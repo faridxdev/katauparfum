@@ -18,9 +18,10 @@ if RENDER_EXTERNAL_HOSTNAME:
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',  # Optimise la gestion des statiques
+    'jazzmin',
     'cloudinary_storage',
     'cloudinary',
-    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -98,7 +99,10 @@ STORAGES = {
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 STATICFILES_STORAGE = "whitenoise.storage.StaticFilesStorage"
 
+# Configuration WhiteNoise pour éviter les erreurs de fichiers manquants (Jazzmin)
+WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
