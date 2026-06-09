@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load price_tags %}
+{% load static %}
 
 {% block title %}Accueil - KATAUPARFUM{% endblock %}
 
@@ -14,7 +15,7 @@
         <p class="text-white text-xs sm:text-sm tracking-widest uppercase font-semibold mb-2 sm:mb-4">
             ✦ Bienvenue chez ✦
         </p>
-        <img src="/static/img/logo.png" alt="KATAUPARFUM" class="logo-img mx-auto mb-1 sm:mb-1 h-48 sm:h-80">
+        <img src="{% static 'img/logo.png' %}" alt="KATAUPARFUM" class="logo-img mx-auto mb-1 sm:mb-1 h-48 sm:h-80">
         <p class="text-white">
             Retrouvez la signature olfactive de vos parfums de créateurs préférés. 
             Nos essences sont des <strong>inspirations fidèles</strong> offrant la même intensité et tenue que les grandes maisons, 

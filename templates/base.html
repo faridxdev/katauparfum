@@ -823,7 +823,7 @@
             // 1. Badge Desktop
             const desktopWrapper = document.querySelector('.cart-icon-wrapper');
             if (desktopWrapper) {
-                let badge = desktopWrapper.querySelector('.cart-badge');
+                let badge = desktopWrapper.querySelector('.cart-badge') || desktopWrapper.querySelector('span');
                 if (count > 0) {
                     if (!badge) {
                         badge = document.createElement('span');
