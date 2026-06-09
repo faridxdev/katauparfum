@@ -121,7 +121,7 @@ JAZZMIN_SETTINGS = {
     "site_header": "💎 KAT AU PARFUM - Admin",
     "site_brand": "KAT AU PARFUM",
     "welcome_sign": "Bienvenue à l'Administration Luxe KAT AU PARFUM 💎",
-    "site_logo": "img/logo.png",
+    "site_logo": "img/logo.png",  # Chemin relatif dans ton dossier static
     "site_logo_classes": "img-fluid",
     "site_icon": "img/favicon.png",
     "theme": "default",
