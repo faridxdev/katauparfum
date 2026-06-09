@@ -6,12 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}KATAUPARFUM - Parfums de Luxe{% endblock %}</title>
-    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Préchargement prioritaire de l'image de fond pour éviter le retard d'affichage -->
-    <link rel="preload" href="/static/img/bg.png" as="image">
+    <link rel="preload" href="{% static 'img/bg.png' %}" as="image">
 
     <style>
         * {
@@ -309,7 +309,7 @@
 /* Hero Section */
         .hero-section {
             background-color: #1a1a1a;
-            background-image: url('/static/img/bg.png');
+            background-image: url("{% static 'img/bg.png' %}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -562,7 +562,7 @@
                 <!-- Logo -->
                 <div class="col-span-1">
                     <a href="{% url 'shop:home' %}" class="flex items-center space-x-3">
-                        <img src="/static/img/logo.png" alt="KATAUPARFUM" class="logo-img">
+                        <img src="{% static 'img/logo.png' %}" alt="KATAUPARFUM" class="logo-img">
                         <span class="text-lg sm:text-2xl font-bold gold-accent site-logo">KAT AU PARFUM</span>
                     </a>
                 </div>
