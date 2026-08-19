@@ -1,5 +1,9 @@
 from django.db import models
 import logging
+try:
+    from cloudinary_storage.storage import VideoMediaCloudinaryStorage
+except Exception:
+    VideoMediaCloudinaryStorage = None
 from django.utils.text import slugify
 from PIL import Image
 
@@ -219,7 +223,8 @@ class SiteSettings(models.Model):
     hero_video = models.FileField(
         upload_to='site/', blank=True, null=True,
         verbose_name="Vidéo de fond (page d'accueil)",
-        help_text="Format MP4 recommandé, quelques secondes en boucle, poids léger (< 10 Mo idéalement)."
+        help_text="Format MP4 recommandé, quelques secondes en boucle, poids léger (< 10 Mo idéalement).",
+        storage=VideoMediaCloudinaryStorage() if VideoMediaCloudinaryStorage is not None else None,
     )
     hero_video_url = models.URLField(
         blank=True, null=True,
