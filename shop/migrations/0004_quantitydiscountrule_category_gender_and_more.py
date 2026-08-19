@@ -26,6 +26,8 @@ def reverse_noop(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    # Run without transaction so we can create/drop indexes safely
+    atomic = False
 
     dependencies = [
         ('shop', '0003a_remove_product_slug_conflicts'),
@@ -132,10 +134,14 @@ class Migration(migrations.Migration):
             field=models.SlugField(blank=True, max_length=220, null=True),
         ),
         migrations.RunPython(populate_product_slugs, reverse_noop),
-        migrations.AlterField(
-            model_name='product',
-            name='slug',
-            field=models.SlugField(blank=True, max_length=220, unique=True),
+        # Create a unique index on slug using a deterministic name to avoid
+        # collisions with auto-generated index names in different environments.
+        migrations.RunSQL(
+            """
+            DROP INDEX IF EXISTS public.shop_product_slug_unique;
+            CREATE UNIQUE INDEX shop_product_slug_unique ON public.shop_product (slug);
+            """,
+            reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.AddField(
             model_name='product',
