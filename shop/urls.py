@@ -6,8 +6,10 @@ app_name = 'shop'
 urlpatterns = [
     path('', views.home, name='home'),
     path('products/', views.products, name='products'),
+    path('produit/<slug:slug>/', views.product_detail, name='product_detail'),
     path('cart/', views.view_cart, name='view_cart'),
     path('checkout/', views.checkout, name='checkout'),
+    path('newsletter/subscribe/', views.newsletter_subscribe, name='newsletter_subscribe'),
     
     # API endpoints
     path('api/add-to-cart/', views.add_to_cart, name='add_to_cart'),

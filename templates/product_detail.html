@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load price_tags %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% if product.inspired_by %} - Inspiré de {{ product.inspired_by }}{% endif %} | KATAUPARFUM Lomé{% endblock %}
+
+{% block meta_description %}{{ product.name }}{% if product.get_gender_display %} pour {{ product.get_gender_display|lower }}{% endif %}{% if product.get_scent_family_display %}, famille olfactive {{ product.get_scent_family_display|lower }}{% endif %}{% if product.volume_ml %}, {{ product.volume_ml }}ml{% endif %}. {% if product.inspired_by %}Inspiré de {{ product.inspired_by }}. {% endif %}Livraison rapide à Lomé, Togo.{% endblock %}
+
+{% block og_type %}product{% endblock %}
+{% block og_title %}{{ product.name }} | KATAUPARFUM{% endblock %}
+{% block og_description %}{% if product.inspired_by %}Inspiré de {{ product.inspired_by }}. {% endif %}{{ product.get_scent_family_display }} · {{ product.get_gender_display }}{% endblock %}
+{% block og_image %}{% if product.image %}{{ product.image.url }}{% else %}https://katauparfum.com{% static 'img/logo.png' %}{% endif %}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "{{ product.name|escapejs }}",
+    "image": "{% if product.image %}{{ product.image.url }}{% endif %}",
+    "description": "{{ product.description|default:product.name|truncatechars:300|escapejs }}",
+    {% if product.inspired_by %}"brand": {"@type": "Brand", "name": "KATAUPARFUM"},{% endif %}
+    "offers": {
+        "@type": "Offer",
+        "priceCurrency": "XOF",
+        "price": "{{ product.price|stringformat:'0.2f' }}",
+        "availability": "{% if product.is_available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+        "url": "https://katauparfum.com{% url 'shop:product_detail' product.slug %}"
+    }
+    {% if product.review_count %},
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ product.average_rating }}",
+        "reviewCount": "{{ product.review_count }}"
+    }
+    {% endif %}
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://katauparfum.com{% url 'shop:home' %}"},
+        {"@type": "ListItem", "position": 2, "name": "Produits", "item": "https://katauparfum.com{% url 'shop:products' %}"},
+        {"@type": "ListItem", "position": 3, "name": "{{ product.name }}", "item": "https://katauparfum.com{% url 'shop:product_detail' product.slug %}"}
+    ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+    <!-- Fil d'ariane -->
+    <nav class="text-xs sm:text-sm text-gray-500 mb-6 flex items-center gap-2 flex-wrap">
+        <a href="{% url 'shop:home' %}" class="hover:text-amber-600">Accueil</a>
+        <span>/</span>
+        <a href="{% url 'shop:products' %}" class="hover:text-amber-600">Produits</a>
+        <span>/</span>
+        <a href="{% url 'shop:products' %}?category={{ product.category.slug }}" class="hover:text-amber-600">{{ product.category.name }}</a>
+        <span>/</span>
+        <span class="text-gray-800 font-medium">{{ product.name }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+
+        <!-- ============== GALERIE ============== -->
+        <div>
+            <div class="relative rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 aspect-square mb-4">
+                {% if product.image %}
+                <img id="main-product-image" src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-7xl">💎</div>
+                {% endif %}
+                <div class="absolute top-4 left-4 badge-row">
+                    {% if product.is_bestseller %}<span class="badge-bestseller">Bestseller</span>{% endif %}
+                    {% if product.is_new %}<span class="badge-new">Nouveau</span>{% endif %}
+                    {% if product.discount_percent %}<span class="discount-badge">-{{ product.discount_percent }}%</span>{% endif %}
+                </div>
+
+                {% if product.gallery_images %}
+                <!-- Flèches gauche/droite pour basculer d'une image à l'autre -->
+                <button type="button" onclick="changeProductImage(-1)" aria-label="Image précédente"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-900 flex items-center justify-center shadow-md transition">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button type="button" onclick="changeProductImage(1)" aria-label="Image suivante"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-900 flex items-center justify-center shadow-md transition">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                {% endif %}
+            </div>
+
+            {% if product.gallery_images %}
+            <div class="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3" id="product-thumbnails">
+                <button type="button" class="product-thumb aspect-square rounded overflow-hidden border-2 border-amber-400" onclick="showProductImage(0)">
+                    <img loading="lazy" src="{{ product.image.url }}" class="w-full h-full object-cover" alt="{{ product.name }}">
+                </button>
+                {% for img in product.gallery_images %}
+                <button type="button" class="product-thumb aspect-square rounded overflow-hidden border-2 border-transparent hover:border-amber-400 transition" onclick="showProductImage({{ forloop.counter }})">
+                    <img loading="lazy" src="{{ img.image.url }}" class="w-full h-full object-cover" alt="{{ product.name }}">
+                </button>
+                {% endfor %}
+            </div>
+
+            <script>
+                const productImages = [
+                    "{{ product.image.url|escapejs }}"{% for img in product.gallery_images %}, "{{ img.image.url|escapejs }}"{% endfor %}
+                ];
+                let currentProductImageIndex = 0;
+
+                function showProductImage(index) {
+                    currentProductImageIndex = (index + productImages.length) % productImages.length;
+                    document.getElementById('main-product-image').src = productImages[currentProductImageIndex];
+                    document.querySelectorAll('.product-thumb').forEach((btn, i) => {
+                        btn.classList.toggle('border-amber-400', i === currentProductImageIndex);
+                        btn.classList.toggle('border-transparent', i !== currentProductImageIndex);
+                    });
+                }
+
+                function changeProductImage(direction) {
+                    showProductImage(currentProductImageIndex + direction);
+                }
+            </script>
+            {% endif %}
+        </div>
+
+        <!-- ============== INFOS PRODUIT ============== -->
+        <div>
+            <p class="text-amber-600 text-xs sm:text-sm tracking-widest uppercase font-semibold mb-2">
+                {{ product.category.name }}
+                {% if product.gender %} · {{ product.get_gender_display }}{% endif %}
+            </p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3" style="font-family:'Playfair Display',serif;">
+                {{ product.name }}
+            </h1>
+
+            {% if product.review_count %}
+            <div class="flex items-center gap-2 mb-4">
+                <span class="gold-accent text-sm">
+                    {% if product.average_rating_rounded >= 1 %}★{% else %}☆{% endif %}{% if product.average_rating_rounded >= 2 %}★{% else %}☆{% endif %}{% if product.average_rating_rounded >= 3 %}★{% else %}☆{% endif %}{% if product.average_rating_rounded >= 4 %}★{% else %}☆{% endif %}{% if product.average_rating_rounded >= 5 %}★{% else %}☆{% endif %}
+                </span>
+                <span class="text-sm text-gray-600 font-medium">{{ product.average_rating }} · {{ product.review_count }} avis</span>
+            </div>
+            {% endif %}
+
+            <!-- Prix + économie vs luxe -->
+            <div class="mb-6">
+                {% price_html product.price product.old_price size="text-4xl" %}
+                {% if product.savings_vs_luxury %}
+                <p class="text-sm text-green-700 font-semibold mt-2">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    {{ product.savings_vs_luxury|display_price }} {{ CURRENCY }} de moins que la version originale
+                </p>
+                {% endif %}
+            </div>
+
+            {% if product.inspired_by %}
+            <div class="mb-6 p-4 rounded-lg border border-amber-300 bg-amber-50">
+                <p class="text-xs uppercase tracking-widest text-amber-700 font-semibold mb-1">Inspiré de</p>
+                <p class="text-gray-800 font-semibold">{{ product.inspired_by }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Caractéristiques rapides -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 text-sm">
+                {% if product.get_concentration_display %}
+                <div class="p-3 rounded border border-gray-200">
+                    <p class="text-gray-400 text-xs uppercase mb-1">Concentration</p>
+                    <p class="font-semibold text-gray-800">{{ product.get_concentration_display }}{% if product.concentration_percent %} · {{ product.concentration_percent }}{% endif %}</p>
+                </div>
+                {% endif %}
+                {% if product.volume_ml %}
+                <div class="p-3 rounded border border-gray-200">
+                    <p class="text-gray-400 text-xs uppercase mb-1">Contenance</p>
+                    <p class="font-semibold text-gray-800">{{ product.volume_ml }} ml</p>
+                </div>
+                {% endif %}
+                {% if product.get_scent_family_display %}
+                <div class="p-3 rounded border border-gray-200">
+                    <p class="text-gray-400 text-xs uppercase mb-1">Famille olfactive</p>
+                    <p class="font-semibold text-gray-800">{{ product.get_scent_family_display }}</p>
+                </div>
+                {% endif %}
+                {% if product.get_intensity_display %}
+                <div class="p-3 rounded border border-gray-200">
+                    <p class="text-gray-400 text-xs uppercase mb-1">Intensité</p>
+                    <p class="font-semibold text-gray-800">{{ product.get_intensity_display }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Notes olfactives -->
+            {% if product.top_notes or product.heart_notes or product.base_notes %}
+            <div class="mb-6 space-y-3">
+                <p class="text-xs uppercase tracking-widest text-gray-500 font-semibold">Notes Olfactives</p>
+                {% if product.top_notes %}
+                <div class="flex items-start gap-3">
+                    <span class="gold-accent text-sm font-bold w-16 shrink-0">Tête</span>
+                    <span class="text-gray-700 text-sm">{{ product.top_notes }}</span>
+                </div>
+                {% endif %}
+                {% if product.heart_notes %}
+                <div class="flex items-start gap-3">
+                    <span class="gold-accent text-sm font-bold w-16 shrink-0">Cœur</span>
+                    <span class="text-gray-700 text-sm">{{ product.heart_notes }}</span>
+                </div>
+                {% endif %}
+                {% if product.base_notes %}
+                <div class="flex items-start gap-3">
+                    <span class="gold-accent text-sm font-bold w-16 shrink-0">Fond</span>
+                    <span class="text-gray-700 text-sm">{{ product.base_notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if product.ingredients_highlight %}
+            <div class="mb-6 flex flex-wrap gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wide bg-gray-900 text-amber-300 px-3 py-1.5 rounded-full">
+                    {{ product.ingredients_highlight }}
+                </span>
+            </div>
+            {% endif %}
+
+            {% if product.description %}
+            <p class="text-gray-600 leading-relaxed mb-6">{{ product.description }}</p>
+            {% endif %}
+
+            <!-- Ajouter au panier -->
+            {% if product.is_available %}
+            <button data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}"
+                    class="btn-luxury w-full text-center block add-to-cart font-semibold py-4 text-base">
+                <i class="fas fa-shopping-bag mr-2"></i> Ajouter au Panier
+            </button>
+            {% else %}
+            <button disabled class="w-full py-4 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed">
+                Indisponible
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ============== AVIS CLIENTS ============== -->
+    <div class="mt-16 pt-10 border-t-2 border-amber-100">
+        <h2 class="section-title mb-8">Avis Clients ({{ product.review_count }})</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="lg:col-span-2 space-y-4">
+                {% for review in product.reviews.all %}
+                <div class="bg-amber-50/50 p-4 rounded-lg border border-amber-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-gray-900">{{ review.author }}</span>
+                        <span class="gold-accent text-sm">
+                            {% if review.rating >= 1 %}★{% else %}☆{% endif %}{% if review.rating >= 2 %}★{% else %}☆{% endif %}{% if review.rating >= 3 %}★{% else %}☆{% endif %}{% if review.rating >= 4 %}★{% else %}☆{% endif %}{% if review.rating == 5 %}★{% else %}☆{% endif %}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 italic text-sm">"{{ review.text }}"</p>
+                </div>
+                {% empty %}
+                <p class="text-gray-400 italic">Aucun avis pour le moment. Soyez la première personne à donner votre avis !</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <form method="POST" class="p-5 rounded-lg border border-amber-200 bg-white space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_review" value="1">
+                    <p class="font-semibold text-gray-800 mb-2">Laisser un avis</p>
+                    <input type="text" name="author" placeholder="Votre nom" required class="w-full text-sm p-3 rounded border border-gray-200 focus:border-amber-400 focus:outline-none">
+                    <select name="rating" class="w-full text-sm p-3 rounded border border-gray-200 focus:border-amber-400 focus:outline-none">
+                        <option value="5">★★★★★ (Excellent)</option>
+                        <option value="4">★★★★☆ (Très bien)</option>
+                        <option value="3">★★★☆☆ (Bien)</option>
+                        <option value="2">★★☆☆☆ (Moyen)</option>
+                        <option value="1">★☆☆☆☆ (Mauvais)</option>
+                    </select>
+                    <textarea name="text" placeholder="Votre avis..." required rows="3" class="w-full text-sm p-3 rounded border border-gray-200 focus:border-amber-400 focus:outline-none"></textarea>
+                    <button type="submit" class="w-full bg-black hover:bg-gray-800 text-amber-300 text-sm font-bold py-3 rounded transition">
+                        Publier mon avis
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== PRODUITS ASSOCIÉS ============== -->
+    {% if related_products %}
+    <div class="mt-16 pt-10 border-t-2 border-amber-100">
+        <h2 class="section-title mb-8">À Associer</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+            {% for rp in related_products %}
+            <a href="{% url 'shop:product_detail' rp.slug %}" class="premium-card p-0 overflow-hidden block">
+                <div class="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 aspect-square">
+                    {% if rp.image %}
+                    <img loading="lazy" src="{{ rp.image.url }}" alt="{{ rp.name }}" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-4xl">💎</div>
+                    {% endif %}
+                </div>
+                <div class="p-3">
+                    <h3 class="text-sm font-bold text-gray-900 mb-1 line-clamp-1">{{ rp.name }}</h3>
+                    {% price_html rp.price rp.old_price size="text-lg" %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

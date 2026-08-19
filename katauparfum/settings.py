@@ -15,6 +15,12 @@ RENDER_EXTERNAL_HOSTNAME = env('RENDER_EXTERNAL_HOSTNAME', default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_EXTERNAL_HOSTNAME}']
 
+# --- SEO : domaine canonique du site (utilisé pour le sitemap, les balises canonical,
+# les URLs absolues Open Graph, etc.) Modifiable via variable d'environnement SITE_DOMAIN
+# si jamais le nom de domaine change.
+SITE_DOMAIN = env('SITE_DOMAIN', default='katauparfum.com')
+SITE_URL = f'https://{SITE_DOMAIN}'
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
@@ -28,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'shop',
 ]
 
@@ -59,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'shop.context_processors.currency',
                 'shop.context_processors.whatsapp_config',
+                'shop.context_processors.site_settings',
             ],
         },
     },
@@ -86,23 +94,12 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.StaticFilesStorage",
-    },
-}
-
-# Compatibilité pour les bibliothèques tierces (comme cloudinary-storage) qui cherchent encore ces variables
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-STATICFILES_STORAGE = "whitenoise.storage.StaticFilesStorage"
-
-# Configuration WhiteNoise pour éviter les erreurs de fichiers manquants (Jazzmin)
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_MANIFEST_STRICT = False
-WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+# Fixe explicitement le type de clé primaire par défaut (BigAutoField, comme dans la
+# toute première migration du projet). Sans ce réglage, Django peut, selon l'environnement,
+# proposer de "convertir" les id de toutes les tables à chaque `makemigrations` — une
+# migration fantôme, inutile et risquée sur une vraie base de données. Ce réglage l'empêche
+# de se reproduire.
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -112,6 +109,39 @@ CLOUDINARY_STORAGE = {
     'API_KEY': env('CLOUDINARY_API_KEY', default=''),
     'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
 }
+
+# --- Stockage des images ---
+# En production (Render), les identifiants Cloudinary sont configurés dans les
+# variables d'environnement du service → Cloudinary est utilisé (images accessibles
+# rapidement partout dans le monde, comme avant).
+# En local (développement sur ta machine), si aucun identifiant Cloudinary n'est
+# renseigné dans le .env, le site bascule automatiquement sur un stockage de
+# fichiers classique dans le dossier media/ du projet. Ça évite l'erreur
+# "Must supply cloud_name" et permet de développer sans configurer Cloudinary.
+_CLOUDINARY_CONFIGURED = bool(CLOUDINARY_STORAGE['CLOUD_NAME'])
+
+if _CLOUDINARY_CONFIGURED:
+    _DEFAULT_MEDIA_BACKEND = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    _DEFAULT_MEDIA_BACKEND = "django.core.files.storage.FileSystemStorage"
+
+STORAGES = {
+    "default": {
+        "BACKEND": _DEFAULT_MEDIA_BACKEND,
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.StaticFilesStorage",
+    },
+}
+
+# Compatibilité pour les bibliothèques tierces (comme cloudinary-storage) qui cherchent encore ces variables
+DEFAULT_FILE_STORAGE = _DEFAULT_MEDIA_BACKEND
+STATICFILES_STORAGE = "whitenoise.storage.StaticFilesStorage"
+
+# Configuration WhiteNoise pour éviter les erreurs de fichiers manquants (Jazzmin)
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 2592000

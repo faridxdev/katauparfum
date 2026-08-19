@@ -2,21 +2,31 @@
 {% load price_tags %}
 
 {% block title %}Panier - KATAUPARFUM{% endblock %}
+{% block robots_meta %}noindex, nofollow{% endblock %}
 
 {% block content %}
-<!-- Page Hero -->
-<section class="hero-section">
+<!-- Page Banner -->
+<section class="page-banner">
     <div class="hero-content">
-        <p class="text-amber-300 text-xs sm:text-sm tracking-widest uppercase font-semibold mb-2 sm:mb-4 animate-pulse">
-            ✦ Mon Panier ✦
-        </p>
-        <h1 class="text-4xl sm:text-5xl font-bold mb-3 sm:mb-4">Votre Sélection</h1>
-        <p class="text-gray-300 text-sm sm:text-lg">Finalisez votre commande en quelques clics</p>
+        <span class="eyebrow" style="color:#c9a556;">Mon Panier</span>
+        <h1 class="text-2xl sm:text-3xl font-bold">Votre Sélection</h1>
     </div>
 </section>
 
 <div class="luxury-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-    
+
+    {% if discount_rules %}
+    <div class="mb-8 rounded-lg border border-amber-300 bg-black text-white px-5 py-4 flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+        <span class="gold-accent font-semibold uppercase text-xs sm:text-sm tracking-widest">Économisez plus en achetant plus</span>
+        {% for rule in discount_rules %}
+        <span class="text-sm sm:text-base">
+            {{ rule.min_quantity }}+ articles = <span class="gold-accent font-bold">-{{ rule.discount_percent }}%</span>
+        </span>
+        {% if not forloop.last %}<span class="text-gray-500">•</span>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% if cart_items %}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Cart Items -->
@@ -48,7 +58,7 @@
                                         <span class="category-badge">{{ item.product.category.name }}</span>
                                     </p>
                                 </div>
-                                <span class="price-tag text-xl">{{ item.product.price|display_price }} {{ CURRENCY }}</span>
+                                {% price_html item.product.price size="text-xl" %}
                             </div>
                             
                             <!-- Quantity & Actions -->
@@ -70,7 +80,7 @@
                             <!-- Subtotal -->
                             <div class="mt-4 pt-4 border-t border-amber-200">
                                 <p class="text-right text-sm">
-                                    Sous-total: <span class="font-bold text-lg gold-accent">{{ item.subtotal|display_price }} {{ CURRENCY }}</span>
+                                    Sous-total: {% price_html item.subtotal size="text-lg" %}
                                 </p>
                             </div>
                         </div>
@@ -91,8 +101,16 @@
                 <div class="space-y-3 mb-6 pb-6 border-b-2 border-amber-200">
                     <div class="flex justify-between text-gray-600">
                         <span class="font-medium">Sous-total:</span>
-                        <span class="font-semibold gold-accent" id="subtotal">{{ total|display_price }} {{ CURRENCY }}</span>
+                        {% price_html subtotal size="text-lg" %}
                     </div>
+                    {% if discount_percent %}
+                    <div class="flex justify-between text-green-700">
+                        <span class="font-medium flex items-center gap-2">
+                            Réduction quantité <span class="discount-badge">-{{ discount_percent }}%</span>
+                        </span>
+                        <span class="font-semibold">- {{ discount_amount|display_price }} {{ CURRENCY }}</span>
+                    </div>
+                    {% endif %}
                     <div class="flex justify-between text-gray-600">
                         <span class="font-medium">Livraison:</span>
                         <span class="text-amber-600 font-bold text-sm">À définir à la commande</span>
@@ -103,7 +121,7 @@
                 <div class="mb-8">
                     <div class="flex justify-between items-baseline">
                         <span class="text-lg font-bold text-gray-900">Total:</span>
-                        <span class="text-4xl font-bold gold-accent" id="total">{{ total|display_price }} {{ CURRENCY }}</span>
+                        {% price_html total size="text-4xl" %}
                     </div>
                 </div>
                 

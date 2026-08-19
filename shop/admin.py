@@ -1,21 +1,64 @@
 from django.contrib import admin
-from .models import Category, Product, Order, OrderItem, Review
+from .models import Category, Product, ProductImage, Order, OrderItem, Review, QuantityDiscountRule, SiteSettings, NewsletterSubscriber
+
+
+@admin.register(NewsletterSubscriber)
+class NewsletterSubscriberAdmin(admin.ModelAdmin):
+    list_display = ['email', 'subscribed_at']
+    search_fields = ['email']
+    ordering = ['-subscribed_at']
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    """Réglages globaux du site (singleton) : vidéo hero, photos genre de la page d'accueil, etc."""
+    list_display = ['__str__']
+
+    fieldsets = (
+        ('🎬 Vidéo de fond (page d\'accueil)', {
+            'fields': ('hero_video', 'hero_video_url'),
+        }),
+        ('🚻 Photos "Achetez Par Genre" (page d\'accueil)', {
+            'fields': ('gender_image_women', 'gender_image_men', 'gender_image_unisex'),
+            'description': "Une photo par bloc (Femme / Homme / Unisexe). Format portrait recommandé. Si vide, une image générique est utilisée à la place.",
+        }),
+    )
+
+    def has_add_permission(self, request):
+        # Empêche de créer plusieurs enregistrements (singleton)
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug']
+    list_display = ['name', 'slug', 'gender']
+    list_filter = ['gender']
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ['name']
 
 
+class ProductImageInline(admin.TabularInline):
+    """Permet d'ajouter plusieurs images (galerie) directement depuis la fiche produit"""
+    model = ProductImage
+    extra = 3
+    fields = ['image', 'order']
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'price', 'is_available', 'created_at']
-    list_filter = ['is_available', 'category', 'created_at']
-    search_fields = ['name', 'description']
+    list_display = [
+        'name', 'category', 'gender', 'price', 'old_price',
+        'is_bestseller', 'is_new', 'is_available', 'created_at'
+    ]
+    list_filter = ['is_available', 'category', 'gender', 'scent_family', 'is_bestseller', 'is_new', 'created_at']
+    search_fields = ['name', 'description', 'inspired_by']
     readonly_fields = ['created_at', 'image_preview']
-    
+    prepopulated_fields = {'slug': ('name',)}
+    inlines = [ProductImageInline]
+
     def image_preview(self, obj):
         """Affiche une prévisualisation de l'image"""
         if obj.image:
@@ -25,21 +68,40 @@ class ProductAdmin(admin.ModelAdmin):
                 obj.image.url
             )
         return "✨ Aucune image"
-    
+
     image_preview.short_description = "👁️ Aperçu"
-    
+
     fieldsets = (
         ('🎁 Informations Produit', {
-            'fields': ('name', 'category', 'price', 'is_available')
+            'fields': ('name', 'slug', 'category', 'gender', 'price', 'old_price', 'is_available')
         }),
-        ('📸 Description & Image', {
+        ('🏷️ Badges Marketing', {
+            'fields': ('is_bestseller', 'is_new'),
+        }),
+        ('📸 Description & Image Principale', {
             'fields': ('description', 'image', 'image_preview')
+        }),
+        ('🌸 Profil Olfactif', {
+            'fields': (
+                'scent_family', 'intensity', 'concentration', 'concentration_percent',
+                'volume_ml', 'top_notes', 'heart_notes', 'base_notes', 'ingredients_highlight',
+            )
+        }),
+        ('💎 Inspiration Luxe', {
+            'fields': ('inspired_by', 'luxury_price_reference'),
+            'description': "Ces champs affichent sur la fiche produit : « Inspiré de X » et « Y FCFA moins cher que la version originale »."
         }),
         ('📅 Métadonnées', {
             'fields': ('created_at',),
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(QuantityDiscountRule)
+class QuantityDiscountRuleAdmin(admin.ModelAdmin):
+    list_display = ['min_quantity', 'discount_percent', 'is_active']
+    list_editable = ['discount_percent', 'is_active']
 
 
 class OrderItemInline(admin.TabularInline):

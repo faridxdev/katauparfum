@@ -8,7 +8,7 @@ import urllib.parse
 import json
 from decimal import Decimal
 
-from .models import Category, Product, Order, OrderItem, Review
+from .models import Category, Product, Order, OrderItem, Review, QuantityDiscountRule, NewsletterSubscriber
 
 
 def get_cart_from_session(request):
@@ -36,6 +36,18 @@ def calculate_cart_total(cart):
     return total
 
 
+def get_quantity_discount(total_items_count):
+    """Retourne le meilleur % de réduction applicable selon la quantité totale d'articles
+    dans le panier (règles définies dans l'admin, ex: 3+ = -10%, 4+ = -15%, 5+ = -20%)."""
+    rule = (
+        QuantityDiscountRule.objects
+        .filter(is_active=True, min_quantity__lte=total_items_count)
+        .order_by('-min_quantity')
+        .first()
+    )
+    return rule.discount_percent if rule else 0
+
+
 def home(request):
     """Page d'accueil avec les produits vedettes"""
     categories = Category.objects.all()
@@ -58,6 +70,9 @@ def products(request):
     category_slug = request.GET.get('category', None)
     product_id = request.GET.get('product_id', None)
     query = request.GET.get('q', '').strip()
+    gender_filter = request.GET.get('gender', None)
+    scent_family_filter = request.GET.get('scent_family', None)
+    sort = request.GET.get('sort', None)
     
     # Traitement du formulaire d'avis (POST)
     if request.method == 'POST' and 'submit_review' in request.POST:
@@ -94,18 +109,74 @@ def products(request):
 
     if query:
         products_qs = products_qs.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    
+
+    if gender_filter in ('women', 'men', 'unisex'):
+        products_qs = products_qs.filter(gender=gender_filter)
+
+    if scent_family_filter:
+        products_qs = products_qs.filter(scent_family=scent_family_filter)
+
+    if sort == 'price_asc':
+        products_qs = products_qs.order_by('price')
+    elif sort == 'price_desc':
+        products_qs = products_qs.order_by('-price')
+    elif sort == 'newest':
+        products_qs = products_qs.order_by('-created_at')
+    elif sort == 'bestseller':
+        products_qs = products_qs.order_by('-is_bestseller', 'name')
+
     cart = get_cart_from_session(request)
     cart_count = sum(cart.values())
-    
+
     context = {
         'categories': categories,
         'products': products_qs,
         'all_products_sidebar': all_products_sidebar,
         'selected_category': selected_category,
         'cart_count': cart_count,
+        'gender_filter': gender_filter,
+        'scent_family_filter': scent_family_filter,
+        'sort': sort,
+        'gender_choices': [('women', 'Femme'), ('men', 'Homme'), ('unisex', 'Unisexe')],
+        'scent_family_choices': [
+            ('floral', 'Fleuri'), ('fresh', 'Frais'), ('gourmand', 'Gourmand'),
+            ('herbal', 'Herbacé'), ('earthy', 'Terreux'), ('warm', 'Chaud'),
+        ],
     }
     return render(request, 'products.html', context)
+
+
+def product_detail(request, slug):
+    """Fiche produit détaillée : galerie, notes olfactives, inspiration luxe, avis, produits associés"""
+    product = get_object_or_404(Product, slug=slug, is_available=True)
+
+    # Traitement du formulaire d'avis
+    if request.method == 'POST' and 'submit_review' in request.POST:
+        author = request.POST.get('author', '').strip()
+        rating = request.POST.get('rating')
+        text = request.POST.get('text', '').strip()
+        if author and rating and text:
+            Review.objects.create(product=product, author=author, rating=int(rating), text=text)
+            messages.success(request, "Merci ! Votre avis a été ajouté avec succès. 💎")
+            return redirect('shop:product_detail', slug=product.slug)
+
+    related_products = (
+        Product.objects.filter(is_available=True)
+        .filter(Q(category=product.category) | Q(scent_family=product.scent_family))
+        .exclude(id=product.id)
+        .distinct()[:4]
+    )
+
+    cart = get_cart_from_session(request)
+    cart_count = sum(cart.values())
+
+    context = {
+        'product': product,
+        'related_products': related_products,
+        'categories': Category.objects.all(),
+        'cart_count': cart_count,
+    }
+    return render(request, 'product_detail.html', context)
 
 
 @require_POST
@@ -209,14 +280,22 @@ def view_cart(request):
         except Product.DoesNotExist:
             continue
     
-    total = calculate_cart_total(cart)
+    subtotal = calculate_cart_total(cart)
+    cart_count = sum(cart.values())
+    discount_percent = get_quantity_discount(cart_count)
+    discount_amount = (subtotal * discount_percent / 100) if discount_percent else Decimal('0.00')
+    total = subtotal - discount_amount
     categories = Category.objects.all()
-    
+
     context = {
         'cart_items': cart_items,
+        'subtotal': subtotal,
+        'discount_percent': discount_percent,
+        'discount_amount': discount_amount,
         'total': total,
         'categories': categories,
-        'cart_count': sum(cart.values()),
+        'cart_count': cart_count,
+        'discount_rules': QuantityDiscountRule.objects.filter(is_active=True).order_by('min_quantity'),
     }
     return render(request, 'cart.html', context)
 
@@ -226,7 +305,7 @@ def checkout(request):
     cart = get_cart_from_session(request)
     
     if not cart:
-        return redirect('view_cart')
+        return redirect('shop:view_cart')
     
     cart_items = []
     for product_id, quantity in cart.items():
@@ -240,7 +319,11 @@ def checkout(request):
         except Product.DoesNotExist:
             continue
     
-    total = calculate_cart_total(cart)
+    subtotal = calculate_cart_total(cart)
+    cart_item_count = sum(cart.values())
+    discount_percent = get_quantity_discount(cart_item_count)
+    discount_amount = (subtotal * discount_percent / 100) if discount_percent else Decimal('0.00')
+    total = subtotal - discount_amount
     categories = Category.objects.all()
     
     if request.method == 'POST':
@@ -261,11 +344,15 @@ def checkout(request):
         if errors:
             context = {
                 'cart_items': cart_items,
+                'subtotal': subtotal,
+                'discount_percent': discount_percent,
+                'discount_amount': discount_amount,
                 'total': total,
                 'categories': categories,
                 'errors': errors,
                 'form_data': request.POST,
                 'cart_count': sum(cart.values()),
+                'discount_rules': QuantityDiscountRule.objects.filter(is_active=True).order_by('min_quantity'),
             }
             return render(request, 'checkout.html', context)
         
@@ -275,6 +362,8 @@ def checkout(request):
             phone=phone,
             address=address,
             delivery_date=delivery_date,
+            subtotal_price=subtotal,
+            discount_percent=discount_percent,
             total_price=total
         )
         
@@ -311,8 +400,31 @@ def checkout(request):
     
     context = {
         'cart_items': cart_items,
+        'subtotal': subtotal,
+        'discount_percent': discount_percent,
+        'discount_amount': discount_amount,
         'total': total,
         'categories': categories,
         'cart_count': sum(cart.values()),
+        'discount_rules': QuantityDiscountRule.objects.filter(is_active=True).order_by('min_quantity'),
     }
     return render(request, 'checkout.html', context)
+
+
+@require_POST
+def newsletter_subscribe(request):
+    """Inscription à la newsletter depuis le footer (section 'Soyez la première informée')"""
+    email = request.POST.get('email', '').strip()
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or '/'
+
+    if not email or '@' not in email:
+        messages.error(request, "Merci de renseigner une adresse email valide.")
+        return redirect(next_url)
+
+    existing = NewsletterSubscriber.objects.filter(email__iexact=email).first()
+    if existing:
+        messages.info(request, "Cette adresse est déjà inscrite à notre newsletter.")
+    else:
+        NewsletterSubscriber.objects.create(email=email)
+        messages.success(request, "Merci ! Vous êtes bien inscrit(e) à notre newsletter. 💎")
+    return redirect(next_url)

@@ -2,27 +2,25 @@
 {% load price_tags %}
 {% load static %}
 
-{% block title %}Accueil - KATAUPARFUM{% endblock %}
+{% block title %}KATAUPARFUM - Parfumerie de Luxe à Lomé, Togo | Inspirations Fidèles{% endblock %}
+{% block meta_description %}Parfumerie à Lomé : inspirations fidèles de parfums de luxe, huiles de parfum femme, homme et unisexe. Livraison rapide à Lomé, commande simple via WhatsApp.{% endblock %}
 
 {% block content %}
 <!-- Hero Section - Premium -->
-<section class="hero-section">
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-4 sm:top-8 right-4 sm:right-10 text-4xl sm:text-5xl animate-pulse">💎</div>
-        <div class="absolute bottom-8 sm:bottom-12 left-4 sm:left-10 text-3xl sm:text-4xl animate-pulse" style="animation-delay: 1s;">✨</div>
-    </div>
+<section class="hero-section{% if HERO_VIDEO_URL %} has-video{% endif %}">
+    {% if HERO_VIDEO_URL %}
+    <video class="hero-video" autoplay muted loop playsinline>
+        <source src="{{ HERO_VIDEO_URL }}" type="video/mp4">
+    </video>
+    {% endif %}
     <div class="hero-content">
-        <p class="text-white text-xs sm:text-sm tracking-widest uppercase font-semibold mb-2 sm:mb-4">
-            ✦ Bienvenue chez ✦
-        </p>
-        <img src="{% static 'img/logo.png' %}" alt="KATAUPARFUM" class="logo-img mx-auto mb-1 sm:mb-1 h-48 sm:h-80">
-        <p class="text-white">
-            Retrouvez la signature olfactive de vos parfums de créateurs préférés. 
-            Nos essences sont des <strong>inspirations fidèles</strong> offrant la même intensité et tenue que les grandes maisons, 
-            pour un luxe enfin accessible.
-        </p>
-        <p class="text-white text-sm sm:text-base md:text-lg mb-6 sm:mb-10 max-w-2xl mx-auto px-4 leading-relaxed">
-            L'Excellence des Grandes Marques • Inspirations & Dupes de Luxe
+        <span class="eyebrow" style="color:#c9a556;">Maison de Parfumerie</span>
+        <img src="{% static 'img/logo.png' %}" alt="KATAUPARFUM - Parfums de luxe et inspirations à Lomé, Togo" class="logo-img mx-auto h-32 sm:h-56">
+        <h1 class="hero-subtitle text-white mt-4 mb-3 sm:mt-5 sm:mb-4 px-2" style="font-family:'Playfair Display',serif; text-shadow: 0 2px 12px rgba(0,0,0,0.6);">
+            Parfums de Luxe &amp; Inspirations Fidèles à Lomé
+        </h1>
+        <p class="text-white text-sm sm:text-base mb-6 sm:mb-8 max-w-xl mx-auto px-4 leading-relaxed" style="text-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+            Inspirations fidèles de grandes maisons, même intensité, même tenue pour un luxe enfin accessible.
         </p>
         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <a href="{% url 'shop:products' %}" class="btn-luxury text-center text-sm sm:text-base py-2 sm:py-3">
@@ -35,6 +33,55 @@
     </div>
 </section>
 
+<!-- Trust Bar -->
+<section class="bg-black text-white py-6 sm:py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+        <div>
+            <p class="gold-accent text-2xl sm:text-3xl font-bold whitespace-nowrap" style="font-family:'Montserrat',sans-serif;">100%</p>
+            <p class="text-gray-300 text-xs sm:text-sm uppercase tracking-wide mt-1">Inspirations Fidèles</p>
+        </div>
+        <div>
+            <p class="gold-accent text-2xl sm:text-3xl font-bold whitespace-nowrap" style="font-family:'Montserrat',sans-serif;">24-48h</p>
+            <p class="text-gray-300 text-xs sm:text-sm uppercase tracking-wide mt-1">Livraison Rapide</p>
+        </div>
+        <div>
+            <p class="gold-accent text-2xl sm:text-3xl font-bold whitespace-nowrap" style="font-family:'Montserrat',sans-serif;">+500</p>
+            <p class="text-gray-300 text-xs sm:text-sm uppercase tracking-wide mt-1">Clientes Satisfaites</p>
+        </div>
+        <div>
+            <p class="gold-accent text-2xl sm:text-3xl font-bold whitespace-nowrap" style="font-family:'Montserrat',sans-serif;">0 FCFA</p>
+            <p class="text-gray-300 text-xs sm:text-sm uppercase tracking-wide mt-1">Sans Inscription</p>
+        </div>
+    </div>
+</section>
+
+<!-- Divider -->
+<div class="divider-luxury"></div>
+
+<!-- Shop by Gender -->
+<section class="py-12 sm:py-16 premium-section">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-10">
+            <span class="eyebrow" style="display:block;text-align:center;">Pour Elle, Pour Lui</span>
+            <h2 class="section-title">Achetez Par Genre</h2>
+        </div>
+        <div class="grid grid-cols-3 gap-3 sm:gap-6">
+            <a href="{% url 'shop:products' %}?gender=women" class="gender-block">
+                <img src="{% if GENDER_IMAGE_WOMEN %}{{ GENDER_IMAGE_WOMEN }}{% else %}{% static 'img/bg.png' %}{% endif %}" alt="Parfums Femme">
+                <span class="gender-label">Femme</span>
+            </a>
+            <a href="{% url 'shop:products' %}?gender=men" class="gender-block">
+                <img src="{% if GENDER_IMAGE_MEN %}{{ GENDER_IMAGE_MEN }}{% else %}{% static 'img/bg.png' %}{% endif %}" alt="Parfums Homme">
+                <span class="gender-label">Homme</span>
+            </a>
+            <a href="{% url 'shop:products' %}?gender=unisex" class="gender-block">
+                <img src="{% if GENDER_IMAGE_UNISEX %}{{ GENDER_IMAGE_UNISEX }}{% else %}{% static 'img/bg.png' %}{% endif %}" alt="Parfums Unisexe">
+                <span class="gender-label">Unisexe</span>
+            </a>
+        </div>
+    </div>
+</section>
+
 <!-- Divider -->
 <div class="divider-luxury"></div>
 
@@ -42,26 +89,22 @@
 <section class="py-12 sm:py-16 premium-section luxury-pattern">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center mb-12">
-            <p class="text-amber-600 text-sm tracking-widest uppercase font-semibold mb-2">Collections</p>
+            <span class="eyebrow" style="display:block;text-align:center;">Collections</span>
             <h2 class="section-title">Nos Catégories Exclusives</h2>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="flex flex-wrap justify-center gap-6">
             {% for category in categories %}
             <a href="{% url 'shop:products' %}?category={{ category.slug }}" 
-               class="premium-card group">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-2xl font-bold gold-accent">{{ category.name }}</h3>
-                    <span class="text-5xl group-hover:scale-125 transition-transform duration-300">
-                        {% if 'oud' in category.slug %}🌳{% elif 'floral' in category.slug %}🌸{% else %}✨{% endif %}
-                    </span>
+               class="premium-card group flex items-center justify-between w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
+                <div>
+                    <span class="eyebrow">Sélection</span>
+                    <h3 class="text-2xl font-bold gold-accent mb-1">{{ category.name }}</h3>
+                    <p class="text-gray-500 text-sm">
+                        {{ category.products.count }} produit{{ category.products.count|pluralize }}
+                    </p>
                 </div>
-                <p class="text-gray-600 text-sm">
-                    {{ category.name|upper }} <span class="gold-line"></span> Premium Selection
-                </p>
-                <p class="text-gray-500 mt-3">
-                    {{ category.products.count }} produit{{ category.products.count|pluralize }}
-                </p>
+                <i class="fas fa-arrow-right text-lg gold-accent group-hover:translate-x-1 transition-transform duration-300"></i>
             </a>
             {% endfor %}
         </div>
@@ -74,69 +117,83 @@
 <!-- Featured Products Section -->
 <section id="featured" class="py-12 sm:py-16 premium-section">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center mb-12">
-            <p class="text-amber-600 text-sm tracking-widest uppercase font-semibold mb-2">Sélection</p>
-            <h2 class="section-title">Produits Vedettes</h2>
+        <div class="flex items-end justify-between mb-8 sm:mb-10">
+            <div>
+                <span class="eyebrow">Sélection</span>
+                <h2 class="text-2xl sm:text-3xl font-normal" style="font-family:'Playfair Display',serif; color:#171512;">Produits Vedettes</h2>
+            </div>
+            {% if products %}
+            <div class="flex gap-2 shrink-0">
+                <button type="button" class="h-scroll-arrow-inline" onclick="document.getElementById('featured-scroll').scrollBy({left:-260,behavior:'smooth'})" aria-label="Précédent">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button type="button" class="h-scroll-arrow-inline" onclick="document.getElementById('featured-scroll').scrollBy({left:260,behavior:'smooth'})" aria-label="Suivant">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            {% endif %}
         </div>
         
         {% if products %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for product in products %}
-            <div class="premium-card p-0 overflow-hidden">
-                <!-- Image Container -->
-                <div class="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 h-80">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover product-image hover:scale-110 transition-transform duration-500">
-                    {% else %}
-                    <div class="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-gray-200 to-gray-300">
-                        💎
-                    </div>
-                    {% endif %}
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="absolute top-4 left-4">
-                        <span class="category-badge">{{ product.category.name }}</span>
-                    </div>
-                </div>
-                
-                <!-- Content -->
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                        {{ product.name }}
-                    </h3>
-                    
-                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">
-                        {{ product.description }}
-                    </p>
-                    
-                    <!-- Divider -->
-                    <div class="divider-luxury opacity-50 mb-4"></div>
-                    
-                    <!-- Price & Status -->
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="price-tag text-2xl">{{ product.price|display_price }} {{ CURRENCY }}</span>
-                        {% if product.is_available %}
-                        <span class="text-green-600 text-xs font-bold uppercase tracking-wide">✓ Stock</span>
+        <div class="h-scroll-wrapper">
+            <div class="h-scroll-row" id="featured-scroll">
+                {% for product in products %}
+                <div class="h-scroll-card premium-card p-0 overflow-hidden">
+                    <!-- Image Container -->
+                    <div class="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 aspect-[3/4]">
+                        <a href="{% url 'shop:product_detail' product.slug %}">
+                        {% if product.image %}
+                        <img loading="lazy" src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover product-image hover:scale-110 transition-transform duration-500">
                         {% else %}
-                        <span class="text-red-600 text-sm font-semibold">✗ Rupture</span>
+                        <div class="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-gray-200 to-gray-300">
+                            💎
+                        </div>
                         {% endif %}
+                        </a>
+                        <div class="absolute top-3 left-3 badge-row">
+                            {% if product.is_bestseller %}<span class="badge-bestseller">Bestseller</span>{% endif %}
+                            {% if product.is_new %}<span class="badge-new">Nouveau</span>{% endif %}
+                            {% if product.discount_percent %}<span class="discount-badge">-{{ product.discount_percent }}%</span>{% endif %}
+                        </div>
                     </div>
-                    
-                    <!-- Button -->
-                        {% if product.is_available %}
-                        <button data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}" 
-                                class="btn-luxury w-full text-center block add-to-cart font-semibold">
-                            <i class="fas fa-shopping-bag mr-2"></i> Ajouter au Panier
-                        </button>
-                    {% else %}
-                    <button disabled class="w-full py-2 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed">
-                        Indisponible
-                    </button>
-                    {% endif %}
+
+                    <!-- Content -->
+                    <div class="p-3 sm:p-4 flex flex-col flex-1">
+                        <h3 class="text-sm sm:text-base font-bold text-gray-900 mb-1 line-clamp-1">
+                            <a href="{% url 'shop:product_detail' product.slug %}" class="hover:text-amber-600">{{ product.name }}</a>
+                        </h3>
+
+                        <!-- Zone note : toujours présente (vide si pas d'avis) pour garder toutes les cartes alignées -->
+                        <div class="flex items-center gap-1 mb-2 text-xs text-gray-500 h-4">
+                            {% if product.review_count %}
+                            <i class="fas fa-star gold-accent"></i>
+                            <span class="font-semibold text-gray-700">{{ product.average_rating }}</span>
+                            <span>({{ product.review_count }})</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-auto">
+                            <div class="mb-3">
+                                {% price_html product.price product.old_price size="text-lg" %}
+                            </div>
+
+                            {% if product.is_available %}
+                            <button data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}"
+                                    class="btn-luxury w-full text-center block add-to-cart font-semibold text-xs sm:text-sm py-2">
+                                <i class="fas fa-shopping-bag mr-1"></i> Ajouter
+                            </button>
+                            {% else %}
+                            <button disabled class="w-full py-2 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed text-xs sm:text-sm">
+                                Indisponible
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
-        
+
         <div class="text-center mt-12">
             <a href="{% url 'shop:products' %}" class="btn-luxury inline-block">
                 Voir Tous les Produits <i class="fas fa-arrow-right ml-2"></i>
@@ -160,37 +217,37 @@
 <section class="py-12 sm:py-16 luxury-pattern">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center mb-12">
-            <p class="text-amber-600 text-sm tracking-widest uppercase font-semibold mb-2">Avantages</p>
+            <span class="eyebrow" style="text-align:center;display:block;">Avantages</span>
             <h2 class="section-title">Pourquoi Nous Choisir ?</h2>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="premium-card text-center group">
-                <div class="text-6xl gold-accent mb-4 group-hover:scale-125 transition-transform">✓</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="premium-card text-center">
+                <i class="fas fa-gem text-2xl gold-accent mb-4"></i>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">Produits Premium</h3>
                 <p class="text-gray-600 text-sm">
                     Sélection exclusive de parfums et huiles de luxe
                 </p>
             </div>
             
-            <div class="premium-card text-center group">
-                <div class="text-6xl gold-accent mb-4 group-hover:scale-125 transition-transform">🛵📦</div>
+            <div class="premium-card text-center">
+                <i class="fas fa-truck-fast text-2xl gold-accent mb-4"></i>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">Livraison Rapide</h3>
                 <p class="text-gray-600 text-sm">
                     Aujourd'hui ou demain selon votre choix
                 </p>
             </div>
             
-            <div class="premium-card text-center group">
-                <div class="text-6xl gold-accent mb-4 group-hover:scale-125 transition-transform">💬</div>
+            <div class="premium-card text-center">
+                <i class="fab fa-whatsapp text-2xl gold-accent mb-4"></i>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">Support Direct</h3>
                 <p class="text-gray-600 text-sm">
                     Contactez-nous facilement via WhatsApp
                 </p>
             </div>
             
-            <div class="premium-card text-center group">
-                <div class="text-6xl gold-accent mb-4 group-hover:scale-125 transition-transform">🔐</div>
+            <div class="premium-card text-center">
+                <i class="fas fa-lock text-2xl gold-accent mb-4"></i>
                 <h3 class="text-lg font-bold text-gray-900 mb-2">Commande Simple</h3>
                 <p class="text-gray-600 text-sm">
                     Sans inscription, rapide et sécurisé

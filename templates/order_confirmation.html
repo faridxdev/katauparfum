@@ -2,17 +2,15 @@
 {% load price_tags %}
 
 {% block title %}Commande Confirmée - KATAUPARFUM{% endblock %}
+{% block robots_meta %}noindex, nofollow{% endblock %}
 
 {% block content %}
-<!-- Hero Success Section -->
-<section class="hero-section">
+<!-- Page Banner -->
+<section class="page-banner">
     <div class="hero-content">
-        <p class="text-amber-300 text-xs sm:text-sm tracking-widest uppercase font-semibold mb-2 sm:mb-4 animate-pulse">
-            ✦ Succès ✦
-        </p>
-        <h1 class="text-4xl sm:text-5xl font-bold mb-3 sm:mb-4">Commande Confirmée!</h1>
-        <p class="text-3xl gold-accent font-semibold mb-3 sm:mb-4">Numéro: #{{ order.id }}</p>
-        <p class="text-gray-300 text-sm sm:text-lg">Merci pour votre confiance</p>
+        <span class="eyebrow" style="color:#c9a556;">Succès</span>
+        <h1 class="text-2xl sm:text-3xl font-bold mb-2">Commande Confirmée !</h1>
+        <p class="text-lg sm:text-xl gold-accent font-semibold">Numéro : #{{ order.id }}</p>
     </div>
 </section>
 
@@ -40,9 +38,15 @@
                     <span class="text-gray-900 font-medium">{{ order.created_at|date:"d/m/Y à H:i" }}</span>
                 </div>
                 
+                {% if order.discount_percent %}
+                <div class="flex justify-between pb-3 border-b border-gray-200 text-green-700">
+                    <span class="font-semibold">Réduction quantité:</span>
+                    <span class="font-bold">-{{ order.discount_percent }}%</span>
+                </div>
+                {% endif %}
                 <div class="flex justify-between pb-3 border-b border-gray-200">
                     <span class="font-semibold text-gray-700">Total:</span>
-                    <span class="text-2xl font-bold gold-accent">{{ order.total_price|display_price }} {{ CURRENCY }}</span>
+                    {% price_html order.total_price size="text-2xl" %}
                 </div>
                 
                 <div class="flex justify-between pb-3">
@@ -102,13 +106,24 @@
                         <span class="ml-3">Quantité: <span class="font-bold">×{{ item.quantity }}</span></span>
                     </p>
                 </div>
-                <p class="font-bold text-lg gold-accent text-right">{{ item.price|display_price }} {{ CURRENCY }}</p>
+                <span class="text-right">{% price_html item.price size="text-lg" %}</span>
             </div>
             {% endfor %}
-            
-            <div class="mt-6 pt-6 border-t-2 border-amber-300 flex justify-between items-center bg-gradient-to-r from-amber-50 to-transparent p-4 rounded-lg">
+
+            <div class="mt-6 pt-2 flex justify-between items-center px-4 text-gray-600 text-sm">
+                <span class="font-medium">Sous-total:</span>
+                {% price_html order.subtotal_price size="text-lg" %}
+            </div>
+            {% if order.discount_percent %}
+            <div class="flex justify-between items-center px-4 text-green-700 text-sm">
+                <span class="font-medium flex items-center gap-2">
+                    Réduction quantité <span class="discount-badge">-{{ order.discount_percent }}%</span>
+                </span>
+            </div>
+            {% endif %}
+            <div class="mt-2 pt-6 border-t-2 border-amber-300 flex justify-between items-center bg-gradient-to-r from-amber-50 to-transparent p-4 rounded-lg">
                 <span class="text-xl font-bold text-gray-900">Total:</span>
-                <span class="text-4xl font-bold gold-accent">{{ order.total_price|display_price }} {{ CURRENCY }}</span>
+                {% price_html order.total_price size="text-4xl" %}
             </div>
         </div>
     </div>

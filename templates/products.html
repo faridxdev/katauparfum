@@ -1,17 +1,15 @@
 {% extends 'base.html' %}
 {% load price_tags %}
 
-{% block title %}Produits - KATAUPARFUM{% endblock %}
+{% block title %}{% if selected_category %}{{ selected_category.name }} - {% endif %}Boutique - Parfums de Luxe | KATAUPARFUM Lomé{% endblock %}
+{% block meta_description %}{% if selected_category %}Découvrez notre sélection {{ selected_category.name|lower }} : inspirations fidèles de parfums de luxe, livraison rapide à Lomé.{% else %}Toute la collection KATAUPARFUM : parfums et huiles de parfum femme, homme, unisexe. Inspirations fidèles, livraison à Lomé, Togo.{% endif %}{% endblock %}
 
 {% block content %}
-<!-- Page Hero -->
-<section class="hero-section">
+<!-- Page Banner -->
+<section class="page-banner">
     <div class="hero-content">
-        <p class="text-amber-300 text-xs sm:text-sm tracking-widest uppercase font-semibold mb-2 sm:mb-4">
-            ✦ Notre Collection ✦
-        </p>
-        <h1 class="text-4xl sm:text-5xl font-bold mb-3 sm:mb-4">Tous les Produits</h1>
-        <p class="text-gray-300 text-sm sm:text-lg">Découvrez notre sélection complète de parfums et huiles exclusifs</p>
+        <span class="eyebrow" style="color:#c9a556;">Notre Collection</span>
+        <h1 class="text-2xl sm:text-3xl font-bold">Tous les Produits</h1>
     </div>
 </section>
 
@@ -29,6 +27,20 @@
                 <a href="{% url 'shop:products' %}?category={{ category.slug }}" 
                    class="whitespace-nowrap px-5 py-2 rounded-full border transition text-sm font-bold shadow-sm {% if selected_category and selected_category.id == category.id %}bg-amber-400 text-black border-amber-400{% else %}bg-white text-gray-600 border-gray-200{% endif %}">
                    {{ category.name }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Genre Mobile (Défilement Horizontal) -->
+            <div class="lg:hidden mb-6 overflow-x-auto pb-2 -mx-4 px-4 flex gap-3 no-scrollbar" style="-webkit-overflow-scrolling: touch;">
+                <a href="{% url 'shop:products' %}{% if selected_category %}?category={{ selected_category.slug }}{% endif %}"
+                   class="whitespace-nowrap px-5 py-2 rounded-full border transition text-sm font-bold shadow-sm {% if not gender_filter %}bg-black text-amber-300 border-black{% else %}bg-white text-gray-600 border-gray-200{% endif %}">
+                   Tous Genres
+                </a>
+                {% for value, label in gender_choices %}
+                <a href="{% url 'shop:products' %}?gender={{ value }}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}"
+                   class="whitespace-nowrap px-5 py-2 rounded-full border transition text-sm font-bold shadow-sm {% if gender_filter == value %}bg-black text-amber-300 border-black{% else %}bg-white text-gray-600 border-gray-200{% endif %}">
+                   {{ label }}
                 </a>
                 {% endfor %}
             </div>
@@ -91,6 +103,36 @@
                     </div>
                 </div>
                 
+                <!-- Gender Filter -->
+                <div class="mb-8 border-t border-gray-100 pt-6">
+                    <h3 class="font-semibold text-gray-900 mb-4 text-sm uppercase tracking-wide">Genre</h3>
+                    <div class="space-y-2">
+                        <a href="{% url 'shop:products' %}{% if selected_category %}?category={{ selected_category.slug }}{% endif %}"
+                           class="block p-3 rounded-lg transition text-sm {% if not gender_filter %}bg-amber-100 border-l-4 border-amber-400 font-semibold text-amber-900{% else %}hover:bg-gray-100 text-gray-700{% endif %}">
+                            Tous
+                        </a>
+                        {% for value, label in gender_choices %}
+                        <a href="{% url 'shop:products' %}?gender={{ value }}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}"
+                           class="block p-3 rounded-lg transition text-sm {% if gender_filter == value %}bg-amber-100 border-l-4 border-amber-400 font-semibold text-amber-900{% else %}hover:bg-gray-100 text-gray-700{% endif %}">
+                            {{ label }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Scent Family Filter -->
+                <div class="mb-8 border-t border-gray-100 pt-6">
+                    <h3 class="font-semibold text-gray-900 mb-4 text-sm uppercase tracking-wide">Famille Olfactive</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for value, label in scent_family_choices %}
+                        <a href="{% url 'shop:products' %}?scent_family={{ value }}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}{% if gender_filter %}&gender={{ gender_filter }}{% endif %}"
+                           class="px-3 py-1.5 rounded-full text-xs font-semibold transition border {% if scent_family_filter == value %}bg-black text-amber-300 border-black{% else %}border-gray-200 text-gray-600 hover:border-amber-400{% endif %}">
+                            {{ label }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <!-- Alphabetical Product List -->
                 <div class="mb-8 border-t border-gray-100 pt-6">
                     <h3 class="font-semibold text-gray-900 mb-4 text-sm uppercase tracking-wide">
@@ -127,18 +169,7 @@
         <main class="lg:col-span-3">
             {% if products %}
             
-            <!-- Messages de succès/erreur -->
-            {% if messages %}
-            <div class="mb-6">
-                {% for message in messages %}
-                <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="mb-8 pb-6 border-b-2 border-amber-200">
+            <div class="mb-8 pb-6 border-b-2 border-amber-200 flex flex-wrap items-center justify-between gap-4">
                 <p class="text-gray-600 font-medium">
                     {% if selected_category %}
                         Affichage de <strong class="text-amber-700">{{ products.count }}</strong> produit{{ products.count|pluralize }} dans 
@@ -147,117 +178,73 @@
                         <strong class="text-amber-700">{{ products.count }}</strong> produit{{ products.count|pluralize }} disponible{{ products.count|pluralize }}
                     {% endif %}
                 </p>
+                <form method="get" class="flex items-center gap-2">
+                    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category.slug }}">{% endif %}
+                    {% if gender_filter %}<input type="hidden" name="gender" value="{{ gender_filter }}">{% endif %}
+                    {% if scent_family_filter %}<input type="hidden" name="scent_family" value="{{ scent_family_filter }}">{% endif %}
+                    <label class="text-xs text-gray-500 uppercase font-semibold">Trier par</label>
+                    <select name="sort" onchange="this.form.submit()" class="text-sm border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-amber-400">
+                        <option value="">Pertinence</option>
+                        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Nouveauté</option>
+                        <option value="bestseller" {% if sort == 'bestseller' %}selected{% endif %}>Bestseller</option>
+                        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+                        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+                    </select>
+                </form>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
                 {% for product in products %}
-                <div class="premium-card p-0 overflow-hidden">
-                    <!-- Image -->
-                    <div class="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 h-80">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" 
-                             class="w-full h-full object-cover product-image hover:scale-110 transition-transform duration-500">
-                        {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-gray-200 to-gray-300">
-                            💎
-                        </div>
-                        {% endif %}
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        
-                        <!-- Availability Badge -->
-                        <div class="absolute top-4 left-4">
-                            <span class="category-badge">{{ product.category.name }}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="p-6">
-                        <!-- Name -->
-                        <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                            {{ product.name }}
-                        </h3>
-                        
-                        <!-- Description -->
-                        <p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">
-                            {{ product.description }}
-                        </p>
-                        
-                        <!-- Divider -->
-                        <div class="divider-luxury opacity-50 mb-4"></div>
-                        
-                        <!-- Price & Status -->
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="price-tag text-2xl">{{ product.price|display_price }} {{ CURRENCY }}</span>
-                            {% if product.is_available %}
-                            <span class="text-green-600 text-xs font-bold uppercase tracking-wide">✓ Stock</span>
+                <div class="premium-card p-0 overflow-hidden flex flex-col h-full">
+                    <a href="{% url 'shop:product_detail' product.slug %}" class="flex flex-col flex-1">
+                        <!-- Image -->
+                        <div class="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 aspect-[3/4]">
+                            {% if product.image %}
+                            <img loading="lazy" src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                 class="w-full h-full object-cover product-image hover:scale-110 transition-transform duration-500">
                             {% else %}
-                            <span class="text-red-600 text-sm font-semibold">✗ Rupture</span>
+                            <div class="w-full h-full flex items-center justify-center text-4xl sm:text-6xl bg-gradient-to-br from-gray-200 to-gray-300">
+                                💎
+                            </div>
                             {% endif %}
+
+                            <!-- Badges : en haut à droite, jamais sur le nom (qui est sous l'image) -->
+                            <div class="absolute top-2 right-2 sm:top-3 sm:right-3 badge-row flex-col items-end">
+                                {% if product.is_bestseller %}<span class="badge-bestseller">Bestseller</span>{% endif %}
+                                {% if product.is_new %}<span class="badge-new">Nouveau</span>{% endif %}
+                                {% if product.discount_percent %}<span class="discount-badge">-{{ product.discount_percent }}%</span>{% endif %}
+                            </div>
+                            <div class="absolute top-2 left-2 sm:top-3 sm:left-3">
+                                <span class="category-badge">{{ product.category.name }}</span>
+                            </div>
                         </div>
                         
-                        <!-- Button -->
+                        <!-- Nom + prix (zone cliquable, pas de description/avis ici) -->
+                        <div class="p-3 sm:p-4 flex flex-col flex-1">
+                            <h3 class="text-sm sm:text-base font-bold text-gray-900 mb-2 line-clamp-2">
+                                {{ product.name }}
+                            </h3>
+                            <div class="mt-auto flex items-center justify-between gap-2">
+                                {% price_html product.price product.old_price size="text-lg" %}
+                                {% if not product.is_available %}
+                                <span class="text-red-600 text-[10px] sm:text-xs font-semibold whitespace-nowrap">✗ Rupture</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Bouton (hors du lien, pour ne pas déclencher la navigation) -->
+                    <div class="px-3 pb-3 sm:px-4 sm:pb-4">
                         {% if product.is_available %}
                         <button data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}" 
-                                class="btn-luxury w-full text-center block add-to-cart font-semibold">
-                            <i class="fas fa-shopping-bag mr-2"></i> Ajouter au Panier
+                                class="btn-luxury w-full text-center block add-to-cart font-semibold text-xs sm:text-sm py-2 sm:py-3">
+                            <i class="fas fa-shopping-bag mr-1 sm:mr-2"></i> <span class="hidden sm:inline">Ajouter au Panier</span><span class="sm:hidden">Ajouter</span>
                         </button>
                         {% else %}
-                        <button disabled class="w-full py-2 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed">
+                        <button disabled class="w-full py-2 bg-gray-300 text-gray-600 rounded font-semibold cursor-not-allowed text-xs sm:text-sm">
                             Indisponible
                         </button>
                         {% endif %}
-
-                        <!-- Section Avis (Accordéon) -->
-                        <details class="group/reviews mt-4 border-t border-amber-100 pt-3">
-                            <summary class="flex items-center justify-between cursor-pointer list-none text-xs font-bold text-amber-700 hover:text-amber-900 uppercase tracking-wide transition">
-                                <span>
-                                    <i class="fas fa-star text-amber-400 mr-1"></i> 
-                                    Avis ({{ product.reviews.count }})
-                                </span>
-                                <i class="fas fa-chevron-down transition-transform duration-300 group-open/reviews:rotate-180"></i>
-                            </summary>
-                            
-                            <div class="mt-3 space-y-3 animate-fadeIn">
-                                <!-- Liste des avis -->
-                                <div class="max-h-40 overflow-y-auto custom-scrollbar space-y-2 pr-1">
-                                    {% for review in product.reviews.all %}
-                                        <div class="bg-amber-50/50 p-2 rounded border border-amber-100">
-                                            <div class="flex justify-between items-center mb-1">
-                                                <span class="font-bold text-xs text-gray-900">{{ review.author }}</span>
-                                                <span class="text-amber-400 text-[10px]">
-                                                    {% if review.rating >= 1 %}★{% else %}☆{% endif %}{% if review.rating >= 2 %}★{% else %}☆{% endif %}{% if review.rating >= 3 %}★{% else %}☆{% endif %}{% if review.rating >= 4 %}★{% else %}☆{% endif %}{% if review.rating == 5 %}★{% else %}☆{% endif %}
-                                                </span>
-                                            </div>
-                                            <p class="text-xs text-gray-600 italic">"{{ review.text }}"</p>
-                                        </div>
-                                    {% empty %}
-                                        <p class="text-xs text-gray-400 italic text-center py-2">Aucun avis pour le moment.</p>
-                                    {% endfor %}
-                                </div>
-                                
-                                <!-- Formulaire d'ajout -->
-                                <form method="POST" class="pt-2 border-t border-amber-100">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                                    <input type="hidden" name="submit_review" value="1">
-                                    
-                                    <div class="space-y-2">
-                                        <input type="text" name="author" placeholder="Votre Nom" required class="w-full text-xs p-2 rounded border border-gray-200 focus:border-amber-400 focus:outline-none">
-                                        <select name="rating" class="w-full text-xs p-2 rounded border border-gray-200 focus:border-amber-400 focus:outline-none">
-                                            <option value="5">★★★★★ (Excellent)</option>
-                                            <option value="4">★★★★☆ (Très bien)</option>
-                                            <option value="3">★★★☆☆ (Bien)</option>
-                                            <option value="2">★★☆☆☆ (Moyen)</option>
-                                            <option value="1">★☆☆☆☆ (Mauvais)</option>
-                                        </select>
-                                        <textarea name="text" placeholder="Votre avis..." required rows="2" class="w-full text-xs p-2 rounded border border-gray-200 focus:border-amber-400 focus:outline-none"></textarea>
-                                        <button type="submit" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold py-2 rounded transition border border-amber-200">
-                                            Publier mon avis
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </details>
                     </div>
                 </div>
                 {% endfor %}
@@ -292,7 +279,7 @@
         background: #f1f1f1;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #d4af37;
+        background: #c9a556;
         border-radius: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
