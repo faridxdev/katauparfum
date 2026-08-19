@@ -28,7 +28,7 @@ def reverse_noop(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shop', '0003_review'),
+        ('shop', '0003a_remove_product_slug_conflicts'),
     ]
 
     operations = [
