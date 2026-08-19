@@ -1,4 +1,5 @@
 from django.db import models
+import logging
 from django.utils.text import slugify
 from PIL import Image
 
@@ -260,7 +261,11 @@ class SiteSettings(models.Model):
 
     def save(self, *args, **kwargs):
         self.pk = 1  # force singleton
-        super().save(*args, **kwargs)
+        try:
+            super().save(*args, **kwargs)
+        except Exception:
+            logging.exception('Error saving SiteSettings')
+            raise
 
     @classmethod
     def load(cls):
