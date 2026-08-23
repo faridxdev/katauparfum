@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, Order, OrderItem, Review, QuantityDiscountRule, SiteSettings, NewsletterSubscriber
+from .models import Category, Product, ProductImage, ProductNote, ProductFAQ, Order, OrderItem, Review, QuantityDiscountRule, SiteSettings, NewsletterSubscriber
 
 
 @admin.register(NewsletterSubscriber)
@@ -21,6 +21,10 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('🚻 Photos "Achetez Par Genre" (page d\'accueil)', {
             'fields': ('gender_image_women', 'gender_image_men', 'gender_image_unisex'),
             'description': "Une photo par bloc (Femme / Homme / Unisexe). Format portrait recommandé. Si vide, une image générique est utilisée à la place.",
+        }),
+        ('🌐 Identité du site', {
+            'fields': ('site_favicon',),
+            'description': "Cette image remplacera le favicon affiché dans l’onglet du navigateur.",
         }),
     )
 
@@ -47,6 +51,18 @@ class ProductImageInline(admin.TabularInline):
     fields = ['image', 'order']
 
 
+class ProductNoteInline(admin.TabularInline):
+    model = ProductNote
+    extra = 3
+    fields = ['note_type', 'name', 'image', 'order']
+
+
+class ProductFAQInline(admin.StackedInline):
+    model = ProductFAQ
+    extra = 2
+    fields = ['question', 'answer', 'order']
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = [
@@ -57,7 +73,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description', 'inspired_by']
     readonly_fields = ['created_at', 'image_preview']
     prepopulated_fields = {'slug': ('name',)}
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductNoteInline, ProductFAQInline]
 
     def image_preview(self, obj):
         """Affiche une prévisualisation de l'image"""
@@ -86,6 +102,10 @@ class ProductAdmin(admin.ModelAdmin):
                 'scent_family', 'intensity', 'concentration', 'concentration_percent',
                 'volume_ml', 'top_notes', 'heart_notes', 'base_notes', 'ingredients_highlight',
             )
+        }),
+        ('🤝 Produits à associer', {
+            'fields': ('associated_products',),
+            'description': "Sélectionnez un ou plusieurs produits. Ils seront les seuls affichés dans « À associer ».",
         }),
         ('💎 Inspiration Luxe', {
             'fields': ('inspired_by', 'luxury_price_reference'),

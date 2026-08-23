@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 import logging
 try:
     from cloudinary_storage.storage import VideoMediaCloudinaryStorage
@@ -101,6 +103,11 @@ class Product(models.Model):
     top_notes = models.CharField(max_length=255, blank=True, null=True, verbose_name="Notes de tête")
     heart_notes = models.CharField(max_length=255, blank=True, null=True, verbose_name="Notes de cœur")
     base_notes = models.CharField(max_length=255, blank=True, null=True, verbose_name="Notes de fond")
+    associated_products = models.ManyToManyField(
+        'self', blank=True, symmetrical=False, related_name='associated_with',
+        verbose_name="Produits à associer",
+        help_text="Seuls ces produits apparaîtront dans la section « À associer »."
+    )
     ingredients_highlight = models.CharField(
         max_length=255, blank=True, null=True,
         verbose_name="Ingrédients clés",
@@ -217,6 +224,45 @@ class ProductImage(models.Model):
                 pass
 
 
+class ProductNote(models.Model):
+    """Note olfactive illustrée affichée dans la fiche produit."""
+    NOTE_TYPES = [
+        ('top', 'Tête'),
+        ('heart', 'Cœur'),
+        ('base', 'Fond'),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='note_items')
+    note_type = models.CharField(max_length=10, choices=NOTE_TYPES, verbose_name="Étape")
+    name = models.CharField(max_length=100, verbose_name="Nom de la note")
+    image = models.ImageField(upload_to='products/notes/', blank=True, null=True, verbose_name="Image de la note")
+    order = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+
+    class Meta:
+        ordering = ['note_type', 'order', 'name']
+        verbose_name = "Note olfactive illustrée"
+        verbose_name_plural = "Notes olfactives illustrées"
+
+    def __str__(self):
+        return f"{self.get_note_type_display()} - {self.name} ({self.product.name})"
+
+
+class ProductFAQ(models.Model):
+    """Question et réponse FAQ propres à un produit."""
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='faqs')
+    question = models.CharField(max_length=255, verbose_name="Question")
+    answer = models.TextField(verbose_name="Réponse")
+    order = models.PositiveIntegerField(default=0, verbose_name="Ordre")
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = "FAQ produit"
+        verbose_name_plural = "FAQ produit"
+
+    def __str__(self):
+        return f"{self.question} ({self.product.name})"
+
+
 class SiteSettings(models.Model):
     """Réglages globaux du site, modifiables depuis l'admin sans toucher au code.
     Un seul enregistrement existe (singleton)."""
@@ -224,7 +270,11 @@ class SiteSettings(models.Model):
         upload_to='site/', blank=True, null=True,
         verbose_name="Vidéo de fond (page d'accueil)",
         help_text="Format MP4 recommandé, quelques secondes en boucle, poids léger (< 10 Mo idéalement).",
-        storage=VideoMediaCloudinaryStorage() if VideoMediaCloudinaryStorage is not None else None,
+        storage=(
+            VideoMediaCloudinaryStorage()
+            if VideoMediaCloudinaryStorage is not None and settings.CLOUDINARY_STORAGE.get('CLOUD_NAME')
+            else FileSystemStorage()
+        ),
     )
     hero_video_url = models.URLField(
         blank=True, null=True,
@@ -247,6 +297,11 @@ class SiteSettings(models.Model):
         upload_to='site/', blank=True, null=True,
         verbose_name="Photo bloc Unisexe",
         help_text="Format portrait recommandé (ratio 3:4). Si vide, une image générique est utilisée."
+    )
+    site_favicon = models.ImageField(
+        upload_to='site/', blank=True, null=True,
+        verbose_name="Favicon du site",
+        help_text="Petite image carrée, idéalement 32x32 ou 64x64 pixels (PNG, JPG ou ICO)."
     )
 
     class Meta:

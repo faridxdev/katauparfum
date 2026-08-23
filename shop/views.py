@@ -160,12 +160,7 @@ def product_detail(request, slug):
             messages.success(request, "Merci ! Votre avis a été ajouté avec succès. 💎")
             return redirect('shop:product_detail', slug=product.slug)
 
-    related_products = (
-        Product.objects.filter(is_available=True)
-        .filter(Q(category=product.category) | Q(scent_family=product.scent_family))
-        .exclude(id=product.id)
-        .distinct()[:4]
-    )
+    related_products = product.associated_products.filter(is_available=True).order_by('name')
 
     cart = get_cart_from_session(request)
     cart_count = sum(cart.values())

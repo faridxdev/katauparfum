@@ -34,7 +34,7 @@
     <!-- Vérification de propriété Google Search Console -->
     <meta name="google-site-verification" content="wQkYkhq4anm4nfbWsHSkWkU9G30wdOOKBhwD4GssGFw" />
 
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    <link rel="icon" href="{% if SITE_FAVICON_URL %}{{ SITE_FAVICON_URL }}{% else %}{% static 'img/favicon.png' %}{% endif %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

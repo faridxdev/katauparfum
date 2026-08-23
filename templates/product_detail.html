@@ -191,43 +191,6 @@
                 {% endif %}
             </div>
 
-            <!-- Notes olfactives -->
-            {% if product.top_notes or product.heart_notes or product.base_notes %}
-            <div class="mb-6 space-y-3">
-                <p class="text-xs uppercase tracking-widest text-gray-500 font-semibold">Notes Olfactives</p>
-                {% if product.top_notes %}
-                <div class="flex items-start gap-3">
-                    <span class="gold-accent text-sm font-bold w-16 shrink-0">Tête</span>
-                    <span class="text-gray-700 text-sm">{{ product.top_notes }}</span>
-                </div>
-                {% endif %}
-                {% if product.heart_notes %}
-                <div class="flex items-start gap-3">
-                    <span class="gold-accent text-sm font-bold w-16 shrink-0">Cœur</span>
-                    <span class="text-gray-700 text-sm">{{ product.heart_notes }}</span>
-                </div>
-                {% endif %}
-                {% if product.base_notes %}
-                <div class="flex items-start gap-3">
-                    <span class="gold-accent text-sm font-bold w-16 shrink-0">Fond</span>
-                    <span class="text-gray-700 text-sm">{{ product.base_notes }}</span>
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
-
-            {% if product.ingredients_highlight %}
-            <div class="mb-6 flex flex-wrap gap-2">
-                <span class="text-xs font-semibold uppercase tracking-wide bg-gray-900 text-amber-300 px-3 py-1.5 rounded-full">
-                    {{ product.ingredients_highlight }}
-                </span>
-            </div>
-            {% endif %}
-
-            {% if product.description %}
-            <p class="text-gray-600 leading-relaxed mb-6">{{ product.description }}</p>
-            {% endif %}
-
             <!-- Ajouter au panier -->
             {% if product.is_available %}
             <button data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}"
@@ -239,6 +202,87 @@
                 Indisponible
             </button>
             {% endif %}
+
+            <!-- ============== INFORMATIONS ACCORDÉON ============== -->
+            <section class="product-accordions mt-8" data-accordion-group>
+                <article class="product-accordion">
+                    <button type="button" class="product-accordion-trigger" aria-expanded="false">
+                        <span>Notes Olfactives</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <div class="product-accordion-panel" hidden>
+                        <div class="notes-panel">
+                            <h2>Notes principales</h2>
+                            {% if product.note_items.all %}
+                            <div class="note-tiles">
+                                {% for note in product.note_items.all %}
+                                <div class="note-tile">
+                                    {% if note.image %}<img loading="lazy" src="{{ note.image.url }}" alt="{{ note.name }}">{% else %}<span class="note-placeholder"><i class="fas fa-leaf"></i></span>{% endif %}
+                                    <span>{{ note.name }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="note-description-list">
+                                {% if product.top_notes %}<p><strong>Tête:</strong> premières impressions olfactives<br>{{ product.top_notes }}</p>{% endif %}
+                                {% if product.heart_notes %}<p><strong>Cœur:</strong> le cœur du parfum, qui dure plusieurs heures<br>{{ product.heart_notes }}</p>{% endif %}
+                                {% if product.base_notes %}<p><strong>Fond:</strong> la signature qui persiste sur la peau tout au long de la journée<br>{{ product.base_notes }}</p>{% endif %}
+                            </div>
+                            {% if product.ingredients_highlight %}<p class="ingredients-line"><strong>Ingrédients:</strong> {{ product.ingredients_highlight }}</p>{% endif %}
+                        </div>
+                    </div>
+                </article>
+
+                <article class="product-accordion">
+                    <button type="button" class="product-accordion-trigger" aria-expanded="false">
+                        <span>À propos</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <div class="product-accordion-panel" hidden>
+                        <div class="simple-panel">{{ product.description|default:"Aucune description n’a encore été ajoutée pour ce produit."|linebreaks }}</div>
+                    </div>
+                </article>
+
+                <article class="product-accordion">
+                    <button type="button" class="product-accordion-trigger" aria-expanded="false">
+                        <span>FAQ</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <div class="product-accordion-panel" hidden>
+                        <div class="faq-panel">
+                            <p><strong>Ces parfums durent-ils longtemps?</strong><br>La tenue dépend de la peau et de la météo, mais nos formules sont pensées pour laisser un sillage présent pendant de longues heures.</p>
+                            <p><strong>J'ai vu un bouchon doré sur vos photos, mais le mien est argenté. Est-ce normal ?</strong><br>Oui, c'est normal. Le bouchon argenté et le flacon dégradé correspondent à nos commandes pour l'Europe. Le modèle doré apparaît parfois dans des visuels destinés à d'autres régions, mais le parfum reste exactement le même.</p>
+                            <p><strong>Quelque chose vous fait hésiter? Posez-nous vos questions!</strong><br>Notre équipe est disponible pour vous guider et répondre à toutes vos questions avant votre commande.<br><a href="mailto:katauparfum@gmail.com">katauparfum@gmail.com</a></p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="product-accordion">
+                    <button type="button" class="product-accordion-trigger" aria-expanded="false">
+                        <span>Best Layered With</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <div class="product-accordion-panel" hidden>
+                        {% if related_products %}<div class="layered-products">{% for rp in related_products %}<a href="{% url 'shop:product_detail' rp.slug %}" title="{{ rp.name }}"><span class="layered-product-image">{% if rp.image %}<img loading="lazy" src="{{ rp.image.url }}" alt="{{ rp.name }}">{% else %}<i class="fas fa-spray-can-sparkles" aria-hidden="true"></i>{% endif %}</span><span class="layered-product-name">{{ rp.name }}</span></a>{% endfor %}</div>{% else %}<div class="simple-panel">Aucun accord de superposition n’a encore été sélectionné pour ce produit.</div>{% endif %}
+                    </div>
+                </article>
+            </section>
+
+            <script>
+                document.querySelectorAll('[data-accordion-group]').forEach((group) => {
+                    group.querySelectorAll('.product-accordion-trigger').forEach((trigger) => {
+                        trigger.addEventListener('click', () => {
+                            const current = trigger.closest('.product-accordion');
+                            const willOpen = trigger.getAttribute('aria-expanded') !== 'true';
+                            group.querySelectorAll('.product-accordion').forEach((item) => {
+                                const itemTrigger = item.querySelector('.product-accordion-trigger');
+                                const panel = item.querySelector('.product-accordion-panel');
+                                const open = item === current && willOpen;
+                                item.classList.toggle('is-open', open);
+                                itemTrigger.setAttribute('aria-expanded', String(open));
+                                itemTrigger.querySelector('i').className = open ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                                panel.hidden = !open;
+                            });
+                        });
+                    });
+                });
+            </script>
         </div>
     </div>
 
@@ -310,4 +354,41 @@
     {% endif %}
 
 </div>
+<style>
+    .product-accordions { max-width: 100%; border-top: 1px solid #dedbd8; }
+    .product-accordion { border-bottom: 1px solid #dedbd8; }
+    .product-accordion-trigger {
+        width: 100%; display: flex; align-items: center; justify-content: space-between;
+        gap: 1rem; padding: 18px 0; background: transparent; border: 0; color: #242424;
+        font: 600 15px 'Montserrat', sans-serif; text-align: left; cursor: pointer;
+    }
+    .product-accordion-trigger i { font-size: 11px; color: #444; }
+    .product-accordion-panel { padding: 0 0 20px; }
+    .notes-panel, .faq-panel, .simple-panel {
+        border-radius: 24px; background: #f7f5f4; padding: 34px 26px;
+    }
+    .notes-panel h2 { font: 700 17px 'Montserrat', sans-serif; margin-bottom: 18px; color: #111d2a; }
+    .note-tiles { display: flex; flex-wrap: wrap; gap: 25px; padding-bottom: 22px; border-bottom: 1px solid #dedbd8; }
+    .note-tile { min-width: 74px; display: flex; flex-direction: column; align-items: center; gap: 7px; color: #111; font-size: 15px; }
+    .note-tile img, .note-placeholder { width: 64px; height: 64px; object-fit: contain; }
+    .note-placeholder { display: flex; align-items: center; justify-content: center; color: #b48231; font-size: 28px; }
+    .note-description-list { display: grid; gap: 16px; padding: 22px 0; border-bottom: 1px solid #dedbd8; color: #111; line-height: 1.5; }
+    .note-description-list strong, .ingredients-line strong, .faq-panel strong { font-weight: 700; }
+    .ingredients-line { padding-top: 20px; color: #111; line-height: 1.55; }
+    .simple-panel, .faq-panel { color: #111; line-height: 1.6; }
+    .faq-panel { display: grid; gap: 20px; }
+    .faq-panel a { color: #ec6e67; text-decoration: underline; text-underline-offset: 3px; }
+    .layered-products { display: flex; flex-wrap: wrap; gap: 14px; }
+    .layered-products a { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; min-width: 132px; padding: 10px 14px 12px; border: 1px solid #d8d2ca; border-radius: 0; color: #222; font-size: 13px; transition: border-color .2s, color .2s; }
+    .layered-products a:hover { border-color: #b48231; color: #8a641f; }
+    .layered-product-image { width: 82px; height: 92px; border-radius: 0; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; background: #eeeae6; color: #b48231; }
+    .layered-product-image img { width: 100%; height: 100%; object-fit: contain; }
+    .layered-product-name { max-width: 130px; text-align: center; line-height: 1.25; }
+    @media (max-width: 640px) {
+        .notes-panel, .faq-panel, .simple-panel { padding: 25px 18px; border-radius: 18px; }
+        .note-tiles { gap: 18px; }
+        .note-tile { min-width: 66px; font-size: 13px; }
+        .note-tile img, .note-placeholder { width: 54px; height: 54px; }
+    }
+</style>
 {% endblock %}

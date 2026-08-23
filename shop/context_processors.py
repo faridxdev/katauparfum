@@ -10,14 +10,17 @@ def site_settings(request):
         gender_women_url = settings_obj.gender_image_women.url if settings_obj.gender_image_women else None
         gender_men_url = settings_obj.gender_image_men.url if settings_obj.gender_image_men else None
         gender_unisex_url = settings_obj.gender_image_unisex.url if settings_obj.gender_image_unisex else None
+        favicon_url = settings_obj.site_favicon.url if settings_obj.site_favicon else None
     except Exception:
         video_url = None
         gender_women_url = gender_men_url = gender_unisex_url = None
+        favicon_url = None
     return {
         'HERO_VIDEO_URL': video_url,
         'GENDER_IMAGE_WOMEN': gender_women_url,
         'GENDER_IMAGE_MEN': gender_men_url,
         'GENDER_IMAGE_UNISEX': gender_unisex_url,
+        'SITE_FAVICON_URL': favicon_url,
     }
 
 
